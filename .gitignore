@@ -1,0 +1,30 @@
+# Compiled output
+/dist
+/build
+
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
+
+# Environment — NUNCA subir secrets
+.env
+.env.local
+.env.*.local
+
+# Los archivos docker de ejemplo SÍ se suben (.env.docker no tiene secrets)
+# .env.docker  <- déjalo sin comentar si quieres subirlo
+
+# IDEs
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.history/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage / tests
+/coverage
