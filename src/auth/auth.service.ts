@@ -2,17 +2,20 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
+import { CategoriesService } from '../categories/categories.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private categoriesService: CategoriesService,
   ) {}
 
   async register(name: string, email: string, password: string) {
     const user = await this.usersService.create(name, email, password);
     const userId = (user._id as any).toString();
+    await this.categoriesService.seedDefaults(userId);
     const token = this.signToken(userId, user.email);
     return { user: { id: userId, name: user.name, email: user.email, currency: user.currency }, ...token };
   }
@@ -25,6 +28,7 @@ export class AuthService {
     if (!valid) throw new UnauthorizedException('Credenciales inválidas');
 
     const userId = (user._id as any).toString();
+    await this.categoriesService.seedDefaults(userId);
     const token = this.signToken(userId, user.email);
     return { user: { id: userId, name: user.name, email: user.email, currency: user.currency }, ...token };
   }
