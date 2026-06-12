@@ -10,7 +10,7 @@ async function bootstrap() {
 
   const httpAdapter = app.getHttpAdapter();
   httpAdapter.get('/health', (_req: any, res: any) => {
-    res.json({ status: 'ok', ts: new Date().toISOString(), v: '1.3.0' });
+    res.json({ status: 'ok', ts: new Date().toISOString(), v: '1.4.0' });
   });
 
   await app.listen(process.env.PORT ?? 3000);
