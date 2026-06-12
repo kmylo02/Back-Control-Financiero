@@ -23,7 +23,7 @@ export class ExpensesService {
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 1);
     return this.expenseModel
-      .find({ userId, date: { $gte: start, $lt: end } })
+      .find({ userId: new Types.ObjectId(userId), date: { $gte: start, $lt: end } })
       .populate('categoryId', 'name icon color')
       .sort({ date: -1 })
       .exec();
@@ -31,7 +31,7 @@ export class ExpensesService {
 
   async findAll(userId: string): Promise<ExpenseDocument[]> {
     return this.expenseModel
-      .find({ userId })
+      .find({ userId: new Types.ObjectId(userId) })
       .populate('categoryId', 'name icon color')
       .sort({ date: -1 })
       .exec();
@@ -39,7 +39,7 @@ export class ExpensesService {
 
   async findOne(userId: string, id: string): Promise<ExpenseDocument> {
     const expense = await this.expenseModel
-      .findOne({ _id: id, userId })
+      .findOne({ _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) })
       .populate('categoryId', 'name icon color')
       .exec();
     if (!expense) throw new NotFoundException('Gasto no encontrado');
@@ -52,7 +52,7 @@ export class ExpensesService {
     if (dto.date) update.date = new Date(dto.date);
 
     const expense = await this.expenseModel
-      .findOneAndUpdate({ _id: id, userId }, update, { new: true })
+      .findOneAndUpdate({ _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) }, update, { new: true })
       .populate('categoryId', 'name icon color')
       .exec();
     if (!expense) throw new NotFoundException('Gasto no encontrado');
@@ -60,7 +60,7 @@ export class ExpensesService {
   }
 
   async remove(userId: string, id: string): Promise<void> {
-    const result = await this.expenseModel.deleteOne({ _id: id, userId }).exec();
+    const result = await this.expenseModel.deleteOne({ _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) }).exec();
     if (result.deletedCount === 0) throw new NotFoundException('Gasto no encontrado');
   }
 

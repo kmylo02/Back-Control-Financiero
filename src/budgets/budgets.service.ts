@@ -15,7 +15,7 @@ export class BudgetsService {
     }));
 
     return this.budgetModel.findOneAndUpdate(
-      { userId, year: dto.year, month: dto.month },
+      { userId: new Types.ObjectId(userId), year: dto.year, month: dto.month },
       { totalLimit: dto.totalLimit, categoryLimits },
       { new: true, upsert: true },
     ).exec();
@@ -23,14 +23,14 @@ export class BudgetsService {
 
   async findByMonth(userId: string, year: number, month: number): Promise<BudgetDocument | null> {
     return this.budgetModel
-      .findOne({ userId, year, month })
+      .findOne({ userId: new Types.ObjectId(userId), year, month })
       .populate('categoryLimits.categoryId', 'name icon color')
       .exec();
   }
 
   async findByYear(userId: string, year: number): Promise<BudgetDocument[]> {
     return this.budgetModel
-      .find({ userId, year })
+      .find({ userId: new Types.ObjectId(userId), year })
       .sort({ month: 1 })
       .exec();
   }
@@ -60,7 +60,7 @@ export class BudgetsService {
   }
 
   async remove(userId: string, year: number, month: number): Promise<void> {
-    const result = await this.budgetModel.deleteOne({ userId, year, month }).exec();
+    const result = await this.budgetModel.deleteOne({ userId: new Types.ObjectId(userId), year, month }).exec();
     if (result.deletedCount === 0) throw new NotFoundException('Presupuesto no encontrado');
   }
 }

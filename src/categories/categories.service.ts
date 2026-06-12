@@ -25,9 +25,10 @@ export class CategoriesService {
   constructor(@InjectModel(Category.name) private categoryModel: Model<CategoryDocument>) {}
 
   async seedDefaults(userId: string): Promise<void> {
-    const count = await this.categoryModel.countDocuments({ userId });
+    const uid = new Types.ObjectId(userId);
+    const count = await this.categoryModel.countDocuments({ userId: uid });
     if (count > 0) return;
-    const defaults = DEFAULT_CATEGORIES.map(cat => ({ ...cat, userId: new Types.ObjectId(userId) }));
+    const defaults = DEFAULT_CATEGORIES.map(cat => ({ ...cat, userId: uid }));
     await this.categoryModel.insertMany(defaults);
   }
 
@@ -38,14 +39,15 @@ export class CategoriesService {
 
   async findAll(userId: string, type?: CategoryType): Promise<CategoryDocument[]> {
     await this.seedDefaults(userId);
-    const filter: Record<string, unknown> = { userId };
+    const uid = new Types.ObjectId(userId);
+    const filter: Record<string, unknown> = { userId: uid };
     if (type) filter.type = { $in: [type, CategoryType.BOTH] };
     return this.categoryModel.find(filter).sort({ name: 1 }).exec();
   }
 
   async update(userId: string, id: string, dto: Partial<CreateCategoryDto>): Promise<CategoryDocument> {
     const category = await this.categoryModel.findOneAndUpdate(
-      { _id: id, userId },
+      { _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) },
       dto,
       { new: true },
     ).exec();
@@ -54,9 +56,9 @@ export class CategoriesService {
   }
 
   async remove(userId: string, id: string): Promise<void> {
-    const category = await this.categoryModel.findOne({ _id: id, userId }).exec();
+    const category = await this.categoryModel.findOne({ _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) }).exec();
     if (!category) throw new NotFoundException('Categoría no encontrada');
     if (category.isDefault) throw new ForbiddenException('No se pueden eliminar categorías predeterminadas');
-    await this.categoryModel.deleteOne({ _id: id }).exec();
+    await this.categoryModel.deleteOne({ _id: new Types.ObjectId(id) }).exec();
   }
 }

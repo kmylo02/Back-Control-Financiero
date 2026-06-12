@@ -22,7 +22,7 @@ export class IncomesService {
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 1);
     return this.incomeModel
-      .find({ userId, date: { $gte: start, $lt: end } })
+      .find({ userId: new Types.ObjectId(userId), date: { $gte: start, $lt: end } })
       .populate('categoryId', 'name icon color')
       .sort({ date: -1 })
       .exec();
@@ -30,7 +30,7 @@ export class IncomesService {
 
   async findAll(userId: string): Promise<IncomeDocument[]> {
     return this.incomeModel
-      .find({ userId })
+      .find({ userId: new Types.ObjectId(userId) })
       .populate('categoryId', 'name icon color')
       .sort({ date: -1 })
       .exec();
@@ -42,7 +42,7 @@ export class IncomesService {
     if (dto.date) update.date = new Date(dto.date);
 
     const income = await this.incomeModel
-      .findOneAndUpdate({ _id: id, userId }, update, { new: true })
+      .findOneAndUpdate({ _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) }, update, { new: true })
       .populate('categoryId', 'name icon color')
       .exec();
     if (!income) throw new NotFoundException('Ingreso no encontrado');
@@ -50,7 +50,7 @@ export class IncomesService {
   }
 
   async remove(userId: string, id: string): Promise<void> {
-    const result = await this.incomeModel.deleteOne({ _id: id, userId }).exec();
+    const result = await this.incomeModel.deleteOne({ _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) }).exec();
     if (result.deletedCount === 0) throw new NotFoundException('Ingreso no encontrado');
   }
 

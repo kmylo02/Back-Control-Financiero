@@ -27,7 +27,7 @@ export class RecurringService {
 
   async findAll(userId: string): Promise<RecurringDocument[]> {
     return this.recurringModel
-      .find({ userId })
+      .find({ userId: new Types.ObjectId(userId) })
       .populate('categoryId', 'name icon color')
       .sort({ name: 1 })
       .exec();
@@ -35,7 +35,7 @@ export class RecurringService {
 
   async findOne(userId: string, id: string): Promise<RecurringDocument> {
     const rec = await this.recurringModel
-      .findOne({ _id: id, userId })
+      .findOne({ _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) })
       .populate('categoryId', 'name icon color')
       .exec();
     if (!rec) throw new NotFoundException('Recurrente no encontrado');
@@ -47,7 +47,7 @@ export class RecurringService {
     if (dto.categoryId) update.categoryId = new Types.ObjectId(dto.categoryId);
 
     const rec = await this.recurringModel
-      .findOneAndUpdate({ _id: id, userId }, update, { new: true })
+      .findOneAndUpdate({ _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) }, update, { new: true })
       .populate('categoryId', 'name icon color')
       .exec();
     if (!rec) throw new NotFoundException('Recurrente no encontrado');
@@ -55,7 +55,7 @@ export class RecurringService {
   }
 
   async remove(userId: string, id: string): Promise<void> {
-    const result = await this.recurringModel.deleteOne({ _id: id, userId }).exec();
+    const result = await this.recurringModel.deleteOne({ _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) }).exec();
     if (result.deletedCount === 0) throw new NotFoundException('Recurrente no encontrado');
   }
 
@@ -154,7 +154,7 @@ export class RecurringService {
 
     return this.recurringModel
       .find({
-        userId,
+        userId: new Types.ObjectId(userId),
         isActive: true,
         mode: { $in: [RecurringMode.MANUAL, RecurringMode.TEMPLATE] },
         $or: [
