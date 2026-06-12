@@ -26,8 +26,9 @@ export class CategoriesService {
 
   async seedDefaults(userId: string): Promise<void> {
     const uid = new Types.ObjectId(userId);
-    const count = await this.categoryModel.countDocuments({ userId: uid });
-    if (count > 0) return;
+    const count = await this.categoryModel.countDocuments({ userId: uid, isDefault: true });
+    if (count === DEFAULT_CATEGORIES.length) return;
+    await this.categoryModel.deleteMany({ userId: uid, isDefault: true });
     const defaults = DEFAULT_CATEGORIES.map(cat => ({ ...cat, userId: uid }));
     await this.categoryModel.insertMany(defaults);
   }
