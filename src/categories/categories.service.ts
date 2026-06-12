@@ -37,6 +37,7 @@ export class CategoriesService {
   }
 
   async findAll(userId: string, type?: CategoryType): Promise<CategoryDocument[]> {
+    await this.seedDefaults(userId);
     const filter: Record<string, unknown> = { userId };
     if (type) filter.type = { $in: [type, CategoryType.BOTH] };
     return this.categoryModel.find(filter).sort({ name: 1 }).exec();
