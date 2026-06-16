@@ -24,7 +24,7 @@ export class IncomesService {
     return this.incomeModel
       .find({ userId: new Types.ObjectId(userId), date: { $gte: start, $lt: end } })
       .populate('categoryId', 'name icon color')
-      .sort({ date: -1 })
+      .sort({ date: -1, createdAt: -1 })
       .exec();
   }
 
@@ -32,7 +32,7 @@ export class IncomesService {
     return this.incomeModel
       .find({ userId: new Types.ObjectId(userId) })
       .populate('categoryId', 'name icon color')
-      .sort({ date: -1 })
+      .sort({ date: -1, createdAt: -1 })
       .exec();
   }
 
