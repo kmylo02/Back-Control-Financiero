@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ExpensesService } from '../expenses/expenses.service';
 import { IncomesService } from '../incomes/incomes.service';
 import { BudgetsService } from '../budgets/budgets.service';
+import { BillItemsService } from '../bill-items/bill-items.service';
 
 @Injectable()
 export class ReportsService {
@@ -9,13 +10,15 @@ export class ReportsService {
     private expensesService: ExpensesService,
     private incomesService: IncomesService,
     private budgetsService: BudgetsService,
+    private billItemsService: BillItemsService,
   ) {}
 
   async getMonthlySummary(userId: string, year: number, month: number) {
-    const [expenses, incomes, byCategoryRaw] = await Promise.all([
+    const [expenses, incomes, byCategoryRaw, agendaTotalPaid] = await Promise.all([
       this.expensesService.getTotalByMonth(userId, year, month),
       this.incomesService.getTotalByMonth(userId, year, month),
       this.expensesService.getByCategoryForMonth(userId, year, month),
+      this.billItemsService.getTotalPaidByMonth(userId, year, month),
     ]);
 
     const byCategory = byCategoryRaw.map(c => ({
@@ -26,12 +29,16 @@ export class ReportsService {
 
     const budgetSummary = await this.budgetsService.getSummary(userId, year, month, expenses, byCategory);
 
+    const totalGastado = expenses + agendaTotalPaid;
+
     return {
       year,
       month,
       totalExpenses: expenses,
+      agendaTotalPaid,
+      totalGastado,
       totalIncomes: incomes,
-      balance: incomes - expenses,
+      balance: incomes - totalGastado,
       byCategory: byCategoryRaw,
       budget: budgetSummary,
     };
@@ -67,28 +74,48 @@ export class ReportsService {
   async compareMonths(userId: string, year: number, month: number) {
     const prevMonth = month === 1 ? 12 : month - 1;
     const prevYear = month === 1 ? year - 1 : year;
-    const prevPrevMonth = prevMonth === 1 ? 12 : prevMonth - 1;
-    const prevPrevYear = prevMonth === 1 ? prevYear - 1 : prevYear;
 
-    const [currentExp, currentInc, prevExp, prevInc, sameMonthLastYearExp, sameMonthLastYearInc] =
+    const [currentExp, currentInc, currentAgenda,
+           prevExp, prevInc, prevAgenda,
+           sameMonthLastYearExp, sameMonthLastYearInc, sameMonthLastYearAgenda] =
       await Promise.all([
         this.expensesService.getTotalByMonth(userId, year, month),
         this.incomesService.getTotalByMonth(userId, year, month),
+        this.billItemsService.getTotalPaidByMonth(userId, year, month),
         this.expensesService.getTotalByMonth(userId, prevYear, prevMonth),
         this.incomesService.getTotalByMonth(userId, prevYear, prevMonth),
+        this.billItemsService.getTotalPaidByMonth(userId, prevYear, prevMonth),
         this.expensesService.getTotalByMonth(userId, year - 1, month),
         this.incomesService.getTotalByMonth(userId, year - 1, month),
+        this.billItemsService.getTotalPaidByMonth(userId, year - 1, month),
       ]);
 
-    const expVsPrev = prevExp > 0 ? Math.round(((currentExp - prevExp) / prevExp) * 100) : null;
-    const expVsLastYear = sameMonthLastYearExp > 0
-      ? Math.round(((currentExp - sameMonthLastYearExp) / sameMonthLastYearExp) * 100)
+    const currentTotal  = currentExp + currentAgenda;
+    const prevTotal     = prevExp + prevAgenda;
+    const sameYearTotal = sameMonthLastYearExp + sameMonthLastYearAgenda;
+
+    const expVsPrev = prevTotal > 0 ? Math.round(((currentTotal - prevTotal) / prevTotal) * 100) : null;
+    const expVsLastYear = sameYearTotal > 0
+      ? Math.round(((currentTotal - sameYearTotal) / sameYearTotal) * 100)
       : null;
 
     return {
-      current: { year, month, expenses: currentExp, incomes: currentInc, balance: currentInc - currentExp },
-      previousMonth: { year: prevYear, month: prevMonth, expenses: prevExp, incomes: prevInc },
-      sameMonthLastYear: { year: year - 1, month, expenses: sameMonthLastYearExp, incomes: sameMonthLastYearInc },
+      current: {
+        year, month,
+        expenses: currentExp,
+        agendaTotalPaid: currentAgenda,
+        totalGastado: currentTotal,
+        incomes: currentInc,
+        balance: currentInc - currentTotal,
+      },
+      previousMonth: {
+        year: prevYear, month: prevMonth,
+        expenses: prevExp, agendaTotalPaid: prevAgenda, totalGastado: prevTotal, incomes: prevInc,
+      },
+      sameMonthLastYear: {
+        year: year - 1, month,
+        expenses: sameMonthLastYearExp, agendaTotalPaid: sameMonthLastYearAgenda, totalGastado: sameYearTotal, incomes: sameMonthLastYearInc,
+      },
       changes: {
         expensesVsPreviousMonth: expVsPrev,
         expensesVsLastYear: expVsLastYear,

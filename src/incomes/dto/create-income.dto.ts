@@ -20,5 +20,9 @@ export class CreateIncomeDto {
 
   @IsString()
   @IsOptional()
+  bank?: string;
+
+  @IsString()
+  @IsOptional()
   notes?: string;
 }

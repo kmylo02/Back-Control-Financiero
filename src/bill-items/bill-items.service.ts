@@ -56,6 +56,14 @@ export class BillItemsService {
     if (result.deletedCount === 0) throw new NotFoundException('Pago no encontrado');
   }
 
+  async getTotalPaidByMonth(userId: string, year: number, month: number): Promise<number> {
+    const result = await this.billModel.aggregate([
+      { $match: { userId: new Types.ObjectId(userId), year, month, status: BillStatus.PAID } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]);
+    return result[0]?.total ?? 0;
+  }
+
   async copyToNextMonth(userId: string, year: number, month: number): Promise<number> {
     const uid = new Types.ObjectId(userId);
     let nextMonth = month + 1;

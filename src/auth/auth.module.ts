@@ -17,7 +17,7 @@ import { CategoriesModule } from '../categories/categories.module';
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET')!,
-        signOptions: { expiresIn: config.get('JWT_EXPIRATION', '7d') as any },
+        signOptions: { expiresIn: config.get('JWT_EXPIRATION', '8h') as any },
       }),
       inject: [ConfigService],
     }),

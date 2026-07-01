@@ -24,6 +24,9 @@ export class Income {
   isRecurring: boolean;
 
   @Prop({ trim: true, default: '' })
+  bank: string;
+
+  @Prop({ trim: true, default: '' })
   notes: string;
 }
 
