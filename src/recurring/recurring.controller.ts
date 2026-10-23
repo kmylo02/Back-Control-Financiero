@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -5,6 +6,7 @@ import { RecurringService } from './recurring.service';
 import { CreateRecurringDto } from './dto/create-recurring.dto';
 
 @UseGuards(JwtAuthGuard)
+@ApiTags('recurring')
 @Controller('recurring')
 export class RecurringController {
   constructor(private recurringService: RecurringService) {}

@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Post, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -5,6 +6,7 @@ import { BudgetsService } from './budgets.service';
 import { CreateBudgetDto } from './dto/create-budget.dto';
 
 @UseGuards(JwtAuthGuard)
+@ApiTags('budgets')
 @Controller('budgets')
 export class BudgetsController {
   constructor(private budgetsService: BudgetsService) {}

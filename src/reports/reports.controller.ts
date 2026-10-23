@@ -1,9 +1,11 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ReportsService } from './reports.service';
 
 @UseGuards(JwtAuthGuard)
+@ApiTags('reports')
 @Controller('reports')
 export class ReportsController {
   constructor(private reportsService: ReportsService) {}

@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Post, Put, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -5,6 +6,7 @@ import { BillItemsService } from './bill-items.service';
 import { CreateBillItemDto } from './dto/create-bill-item.dto';
 
 @UseGuards(JwtAuthGuard)
+@ApiTags('bill-items')
 @Controller('bill-items')
 export class BillItemsController {
   constructor(private billItemsService: BillItemsService) {}
